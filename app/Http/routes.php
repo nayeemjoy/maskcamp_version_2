@@ -16,10 +16,34 @@ Route::get('/', function () {
 });
 
 
-Route::get('posts', 'PostController@index');
+Route::group(['prefix' => 'api/v1'], function(){
+	// Route::controller('password', 'RemindersController');
+	Route::post('register', ['as'=>'user.store','uses' => 'UserController@store']);
+	Route::post('access_token', ['as'=>'access_token','uses' => 'Auth\AuthController@getAccessToken']);
+	Route::post('refresh_token', ['as'=>'refresh_token','uses' => 'Auth\AuthController@refreshToken']);
+
+
+	Route::group(array('middleware' => 'auth'), function()
+	{
+
+
+		Route::get('posts', ['as'=>'post.index','uses' => 'PostController@index']);
+
+
+		
+	});
+});
+
+
 
 
 
 Route::get('socket', 'SocketController@index');
 Route::post('sendmessage', 'SocketController@sendMessage');
 Route::get('writemessage', 'SocketController@writemessage');
+
+Route::get('test', function () {
+
+	
+    return view('welcome');
+});

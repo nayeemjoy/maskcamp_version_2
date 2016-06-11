@@ -34,14 +34,44 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        if ($this->auth->guest()) {
-            if ($request->ajax()) {
-                return response('Unauthorized.', 401);
-            } else {
-                return redirect()->guest('auth/login');
-            }
+        $data = $request->all();
+        $rules =[
+            'access_token'   => 'required'
+            // 'gcm_id'         => 'required'
+        ];
+        $validation = Validator::make($data,$rules);
+        $message = [
+            'error' => [
+                'message' => 'access_token parameter required',
+                'status_code' => 404
+                // 'expires_in' => $token->expires.' minutes'
+            ]
+        ];
+        if($validation->fails()){
+            return $this->response->setStatusCode(404)->withArray($message);
         }
-
+        $token = Token::whereAccessToken($data['access_token'])->first();
+        if($token == null){
+            $message = [
+                'error' => [
+                    'message' => 'invalid access_token',
+                    'status_code' => 400
+                    // 'expires_in' => $token->expires.' minutes'
+                ]
+            ];
+            return $this->response->setStatusCode(400)->withArray($message);
+        }
+        $token_created_date = Carbon::parse($token->updated_at);
+        if($token_created_date->diffInMinutes() > Meta::find(1)->value){
+            $message = [
+                'error' => [
+                    'message' => 'access_token validity expires',
+                    'status_code' => 401
+                    // 'expires_in' => $token->expires.' minutes'
+                ]
+            ];
+            return $this->response->setStatusCode(401)->withArray($message);
+        }
         return $next($request);
     }
 }

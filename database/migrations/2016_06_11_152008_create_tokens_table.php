@@ -17,7 +17,7 @@ class CreateTokensTable extends Migration
             $table->string('access_token');
             $table->string('refresh_token');
             $table->integer('expires');
-            $table->integer('user_id')->unsigned();
+            $table->bigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();

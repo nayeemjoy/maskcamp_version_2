@@ -2,7 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
+use EllipseSynergie\ApiResponse\Contracts\Response;
+use Illuminate\Http\Request;
+
+// Models
 use App\User;
+use App\Token;
+use App\Meta;
+
+
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
@@ -28,9 +36,10 @@ class AuthController extends Controller
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Response $response)
     {
         $this->middleware('guest', ['except' => 'getLogout']);
+        $this->response = $response;
     }
 
     /**
@@ -68,16 +77,16 @@ class AuthController extends Controller
         $data = $request->all();
         $rules =[
             'uid'                  => 'required',
-            'gcm_id'               => 'required'
+            // 'gcm_id'               => 'required'
         ];
         $validation = Validator::make($data,$rules);
         if($validation->fails()){
             return $this->response->setStatusCode(400)->withArray(['error' => $validation->messages()]);
         }
-        $user = User::whereUid($data['uid'])->first();
+        $user = User::whereFacebookUserId($data['uid'])->first();
         if($user){
-            $access_token = md5($user->uid.time().rand(111111,9099999));
-            $refresh_token = md5(time().$user->uid.rand(111111,9099999).'refresh');
+            $access_token = md5($user->facebook_user_id.time().rand(111111,9099999));
+            $refresh_token = md5(time().$user->facebook_user_id.rand(111111,9099999).'refresh');
             $token = new Token;
             $token->access_token = $access_token;
             $token->refresh_token = $refresh_token;
@@ -85,13 +94,13 @@ class AuthController extends Controller
             $token->user_id = $user->id;
             $token->save();
 
-            $device = Device::whereGcmId($data['gcm_id'])->first();
-            if($device == null){
-                $device = new Device;
-                $device->gcm_id = $data['gcm_id'];
-            }
-            $device->user_id = $user->id;
-            $device->save();
+            // $device = Device::whereGcmId($data['gcm_id'])->first();
+            // if($device == null){
+            //     $device = new Device;
+            //     $device->gcm_id = $data['gcm_id'];
+            // }
+            // $device->user_id = $user->id;
+            // $device->save();
             $data = [
                 'data' => [
                     'access_token' => $access_token,

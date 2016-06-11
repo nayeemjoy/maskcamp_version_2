@@ -41,3 +41,9 @@ Route::group(['prefix' => 'api/v1'], function(){
 Route::get('socket', 'SocketController@index');
 Route::post('sendmessage', 'SocketController@sendMessage');
 Route::get('writemessage', 'SocketController@writemessage');
+
+Route::get('test', function () {
+
+	
+    return view('welcome');
+});

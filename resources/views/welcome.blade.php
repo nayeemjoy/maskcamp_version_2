@@ -33,12 +33,16 @@
             .title {
                 font-size: 96px;
             }
+            .content h2{
+                text-align: right;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="content">
                 <div class="title">MaskCamp</div>
+                <h2>Now Under Construction</h2>
             </div>
         </div>
     </body>
